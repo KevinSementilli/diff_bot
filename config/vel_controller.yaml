@@ -1,0 +1,22 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 100
+    # use_sim_time: true
+
+    vel_controller:
+      type: velocity_controllers/JointGroupVelocityController
+
+    joint_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+vel_controller:
+  ros__parameters:
+    joints:
+      - wrist_carrier_joint
+      - wrist_bevel_joint
+
+joint_broadcaster:
+  ros__parameters:
+    joints:
+      - wrist_carrier_joint
+      - wrist_bevel_joint

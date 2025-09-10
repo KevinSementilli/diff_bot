@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro"  name="diff_bot">
+
+    <xacro:arg name="cmd_mode" default="position"/>
+    <xacro:arg name="real_time" default="true"/>
+
+    <xacro:include filename="robot_core.xacro"/>
+
+    <xacro:if value="$(arg real_time)">    
+        <xacro:include filename="ros2_control.xacro"/>
+        <xacro:ros2_control cmd_mode="$(arg cmd_mode)"/>
+    </xacro:if>
+
+    <xacro:unless value="$(arg real_time)">
+        <xacro:include filename="sim_control.xacro"/>
+        <xacro:ros2_control_mock_hardware cmd_mode="$(arg cmd_mode)"/>
+    </xacro:unless>
+    
+</robot>

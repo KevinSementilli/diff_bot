@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<library path="diff_bot">
+  <class name="diff_bot/StepperSystemHardware"
+         type="diff_bot::StepperSystemHardware"
+         base_class_type="hardware_interface::SystemInterface">
+    <description>
+      Made for a gear differential 2 DOF robotic arm with stepper motors communicating to the controller via CANbus.
+    </description>
+  </class>
+</library>

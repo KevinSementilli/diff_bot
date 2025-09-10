@@ -1,0 +1,54 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 100
+    # use_sim_time: true
+
+    velocity_trajectory_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+    position_trajectory_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+    joint_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+velocity_trajectory_controller:
+  ros__parameters:
+    joints:
+      - carrier_joint
+      - bevel_joint
+    interface_name: velocity
+    command_interfaces:
+      - velocity
+      - acceleration
+    state_interfaces:
+      - position
+      - velocity
+    allow_partial_joints_goal: true
+    constraints:
+      stopped_velocity_tolerance: 0.01
+      goal_time: 0.5
+
+position_trajectory_controller:
+  ros__parameters:
+    joints:
+      - carrier_joint
+      - bevel_joint
+    interface_name: position
+    command_interfaces:
+      - position
+      - velocity
+      - acceleration
+    state_interfaces:
+      - position
+      - velocity
+    allow_partial_joints_goal: true
+    constraints:
+      stopped_velocity_tolerance: 0.01
+      goal_time: 0.5
+
+joint_broadcaster:
+  ros__parameters:
+    joints:
+      - carrier_joint
+      - bevel_joint

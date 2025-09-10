@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/opt/ros/humble/include/**",
+                "/usr/include/**",
+                "${workspaceFolder}/hardware/include",
+                "/opt/ros/humble/include/lifecycle_msgs",
+                "/opt/ros/humble/include/rclcpp_lifecycle",
+                "/opt/ros/humble/include/rcl_lifecycle"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "c17",
+            "cppStandard": "gnu++17",
+            "intelliSenseMode": "linux-gcc-arm64"
+        }
+    ],
+    "version": 4
+}
