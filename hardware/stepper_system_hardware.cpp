@@ -101,8 +101,8 @@ namespace diff_bot {
         RCLCPP_INFO(logger_, "Configuring %zu stepper motors...",
                     cfg_.joint_names.size());
         
-        motor_L = std::make_unique<StepperMotor>(cfg_.joint_names[0], cfg_.joint_reductions[0], cfg_.CAN_id_[0], logger_);
-        motor_R = std::make_unique<StepperMotor>(cfg_.joint_names[1], cfg_.joint_reductions[1], cfg_.CAN_id_[1], logger_);
+        motor_L = std::make_unique<StepperMotor>(cfg_.joint_names[0], cfg_.joint_reductions[0], cfg_.CAN_id[0], logger_);
+        motor_R = std::make_unique<StepperMotor>(cfg_.joint_names[1], cfg_.joint_reductions[1], cfg_.CAN_id[1], logger_);
 
         RCLCPP_INFO(logger_, "Joint '%s' assigned CAN ID: 0x%X", cfg_.joint_names[0].c_str(), CAN_id_L);
         RCLCPP_INFO(logger_, "Joint '%s' assigned CAN ID: 0x%X", cfg_.joint_names[1].c_str(), CAN_id_R);
