@@ -22,21 +22,24 @@
 #include "diff_bot/Stepper.hpp"
 
 namespace diff_bot
-{
+{   
+
     class StepperSystemHardware : public hardware_interface::SystemInterface
     {
 
-    struct Config {
-    
-        std::vector<std::string> joint_names;
-        std::vector<double> joint_reductions;
-        std::vector<std::string> CAN_id;
+        struct Config {
+        
+            std::vector<std::string> joint_names;
+            std::vector<double> joint_reductions;
+            std::vector<uint16_t>CAN_id;
 
-        std::string interface_name = "";
-        double CAN_id[2] = {0x00, 0x00};
-        int CAN_rate = 0;
-        int timout_ms = 0;
-    };
+            std::string interface_name = "";
+            int CAN_rate = 0;
+            int timout_ms = 0;
+            int loop_rate = 0;
+        };
+
+        enum CommandMode { SPEED, POSITION };
 
     public:
         RCLCPP_SHARED_PTR_DEFINITIONS(StepperSystemHardware)
@@ -75,17 +78,30 @@ namespace diff_bot
         hardware_interface::return_type write(
             const rclcpp::Time & time, const rclcpp::Duration & period) override;
 
+        DIFF_BOT_PUBLIC
+        hardware_interface::return_type prepare_command_mode_switch(
+            const std::vector<std::string>& start_ifaces, 
+            const std::vector<std::string>& stop_ifaces) override;
+
+        DIFF_BOT_PUBLIC
+        hardware_interface::return_type perform_command_mode_switch(
+            const std::vector<std::string>& start_ifaces, 
+            const std::vector<std::string>& stop_ifaces) override;
+
     private:
+        
+        void setCommandMode(CommandMode mode) { cmd_mode_ = mode; }
+        void updateDiffJointStates();
+        double updateDiffMotorCmd(int motor_index, int cmd_index);
 
         Config cfg_;
         rclcpp::Logger logger_ = rclcpp::get_logger("stepper_system_hardware");  
         CANComms comms_{logger_}; 
 
-        std::unique_ptr<StepperMotor> motor_L, motor_R;
-        std::string cmd_mode_ = "";
-
-        double joint_commands[2][3];
-        double joint_states[2][2];
+        std::vector<std::unique_ptr<StepperMotor>> motors;
+        std::vector<double[2]> joint_states;   // position, velocity
+        std::vector<std::vector<double>> joint_cmds;  // position, velocity, acceleration
+        CommandMode cmd_mode_;
     };
 }
 

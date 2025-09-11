@@ -6,8 +6,6 @@
 #include <string>
 #include <rclcpp/rclcpp.hpp>
 
-enum class CommandMode { SPEED, POSITION };
-
 class StepperMotor
 {
 public:
@@ -16,16 +14,15 @@ public:
     double pos = 0;
     double vel = 0;
     double acc = 0;
-
+    
     StepperMotor(std::string name, 
                  double reduction, 
                  uint16_t CAN_id,
-                 const rclcpp::Logger &logger, 
-                 )
-        : name_(name), 
+                 const rclcpp::Logger &logger)
+        : name_(std::move(name)), 
         gear_reduction(reduction),  
-        CAN_id_(CAN_id)
-        logger_(logger), {}
+        CAN_id_(CAN_id),
+        logger_(logger) {}
 
     bool attachComms(CANComms &comms) {
         comms_ = &comms;
@@ -133,7 +130,6 @@ private:
     CANComms* comms_ = nullptr;
     uint16_t CAN_id_;
     rclcpp::Logger logger_;
-    CommandMode cmd_mode_;
 };
 
 #endif // DIFF_BOT_STEPPER_HPP

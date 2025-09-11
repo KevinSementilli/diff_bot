@@ -7,6 +7,8 @@
                 <plugin>diff_bot/StepperSystemHardware</plugin>
                 <param name="device">can0</param>
                 <param name="CAN_rate">500000</param>
+                <param name="timeout">5</param>
+                <param name="loop_rate">1000</param>
             </hardware>
 
             <joint name="wrist_carrier_joint">
