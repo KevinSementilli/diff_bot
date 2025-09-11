@@ -78,21 +78,21 @@ namespace diff_bot
         hardware_interface::return_type write(
             const rclcpp::Time & time, const rclcpp::Duration & period) override;
 
-        DIFF_BOT_PUBLIC
-        hardware_interface::return_type prepare_command_mode_switch(
-            const std::vector<std::string>& start_ifaces, 
-            const std::vector<std::string>& stop_ifaces) override;
+        // DIFF_BOT_PUBLIC
+        // hardware_interface::return_type prepare_command_mode_switch(
+        //     const std::vector<std::string>& start_ifaces, 
+        //     const std::vector<std::string>& stop_ifaces) override;
 
-        DIFF_BOT_PUBLIC
-        hardware_interface::return_type perform_command_mode_switch(
-            const std::vector<std::string>& start_ifaces, 
-            const std::vector<std::string>& stop_ifaces) override;
+        // DIFF_BOT_PUBLIC
+        // hardware_interface::return_type perform_command_mode_switch(
+        //     const std::vector<std::string>& start_ifaces, 
+        //     const std::vector<std::string>& stop_ifaces) override;
 
     private:
         
         void setCommandMode(CommandMode mode) { cmd_mode_ = mode; }
         void updateDiffJointStates();
-        double updateDiffMotorCmd(int motor_index, int cmd_index);
+        double updateDiffMotorCmd(size_t motor_index, size_t cmd_index);
 
         Config cfg_;
         rclcpp::Logger logger_ = rclcpp::get_logger("stepper_system_hardware");  

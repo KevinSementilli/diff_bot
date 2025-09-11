@@ -254,7 +254,7 @@ namespace diff_bot {
                     if (i < motors.size() - 2) {
                         motor_cmds[j] = motors[i]->gear_reduction * joint_cmds[i][j];
                     } else {
-                        motor_cmds[j] = updateDiffMotorCmd(i,++j);
+                        motor_cmds[j] = updateDiffMotorCmd(i,j+1);
                     }
                 } 
 
@@ -272,7 +272,7 @@ namespace diff_bot {
         return hardware_interface::return_type::OK;
     }
 
-    double StepperSystemHardware::updateDiffMotorCmd(int motor_index, int cmd_index) {
+    double StepperSystemHardware::updateDiffMotorCmd(size_t motor_index, size_t cmd_index) {
 
         // Use last two motors
         auto& motor_L = motors[motors.size() - 2];
@@ -285,25 +285,25 @@ namespace diff_bot {
             (carrier_cmd[cmd_index] - bevel_cmd[cmd_index]) * motor_R->gear_reduction;
     }
 
-    hardware_interface::return_type prepare_command_mode_switch(
-        const std::vector<std::string>& start_ifaces,
-        const std::vector<std::string>& stop_ifaces)
-    {
-        // 1) Validate the set to be started is either:
-        //    - speed mode:  velocity (+accel) for your joints
-        //    - position mode: position (+velocity,+accel) for your joints
-        // 2) Check for conflicts you can’t support.
-        // Keep this realtime-safe: no allocations if possible.
-        return hardware_interface::return_type::OK;
-    }
+    // hardware_interface::return_type prepare_command_mode_switch(
+    //     const std::vector<std::string>& start_ifaces,
+    //     const std::vector<std::string>& stop_ifaces)
+    // {
+    //     // 1) Validate the set to be started is either:
+    //     //    - speed mode:  velocity (+accel) for your joints
+    //     //    - position mode: position (+velocity,+accel) for your joints
+    //     // 2) Check for conflicts you can’t support.
+    //     // Keep this realtime-safe: no allocations if possible.
+    //     return hardware_interface::return_type::OK;
+    // }
 
-    hardware_interface::return_type perform_command_mode_switch(
-        const std::vector<std::string>& start_ifaces,
-        const std::vector<std::string>& stop_ifaces) {
+    // hardware_interface::return_type perform_command_mode_switch(
+    //     const std::vector<std::string>& start_ifaces,
+    //     const std::vector<std::string>& stop_ifaces) {
 
 
-        return hardware_interface::return_type::OK;
-    }
+    //     return hardware_interface::return_type::OK;
+    // }
 
 } // namespace robotic_arm
 
