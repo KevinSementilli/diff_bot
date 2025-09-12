@@ -78,19 +78,22 @@ namespace diff_bot
         hardware_interface::return_type write(
             const rclcpp::Time & time, const rclcpp::Duration & period) override;
 
-        // DIFF_BOT_PUBLIC
-        // hardware_interface::return_type prepare_command_mode_switch(
-        //     const std::vector<std::string>& start_ifaces, 
-        //     const std::vector<std::string>& stop_ifaces) override;
+        DIFF_BOT_PUBLIC
+        hardware_interface::return_type prepare_command_mode_switch(
+            const std::vector<std::string>& start_ifaces, 
+            const std::vector<std::string>& stop_ifaces) override;
 
-        // DIFF_BOT_PUBLIC
-        // hardware_interface::return_type perform_command_mode_switch(
-        //     const std::vector<std::string>& start_ifaces, 
-        //     const std::vector<std::string>& stop_ifaces) override;
+        DIFF_BOT_PUBLIC
+        hardware_interface::return_type perform_command_mode_switch(
+            const std::vector<std::string>& start_ifaces, 
+            const std::vector<std::string>& stop_ifaces) override;
 
     private:
         
-        void setCommandMode(CommandMode mode) { cmd_mode_ = mode; }
+        void setCommandMode(CommandMode mode) { 
+            cmd_mode_ = mode;
+        }
+
         void updateDiffJointStates();
         double updateDiffMotorCmd(size_t motor_index, size_t cmd_index);
 
@@ -100,8 +103,9 @@ namespace diff_bot
 
         std::vector<std::unique_ptr<StepperMotor>> motors;
         std::vector<double[2]> joint_states;   // position, velocity
-        std::vector<std::vector<double>> joint_cmds;  // position, velocity, acceleration
+        std::vector<double[3]> joint_cmds;  // position, velocity, acceleration
         CommandMode cmd_mode_;
+        CommandMode requested_cmd_mode_;
     };
 }
 
