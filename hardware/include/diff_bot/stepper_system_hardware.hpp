@@ -102,8 +102,8 @@ namespace diff_bot
         CANComms comms_{logger_}; 
 
         std::vector<std::unique_ptr<StepperMotor>> motors;
-        std::vector<double[2]> joint_states;   // position, velocity
-        std::vector<double[3]> joint_cmds;  // position, velocity, acceleration
+        std::vector<std::array<double, 2>> joint_states;   // position, velocity
+        std::vector<std::array<double, 3>> joint_cmds;     // position, velocity, acceleration
         CommandMode cmd_mode_;
         CommandMode requested_cmd_mode_;
     };

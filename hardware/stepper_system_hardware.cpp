@@ -36,57 +36,72 @@ namespace diff_bot {
         cfg_.timout_ms = std::stoi(info_.hardware_parameters["timeout"]);
         cfg_.loop_rate = std::stoi(info_.hardware_parameters["loop_rate"]);
 
+        // Initialize state and command storage
+        joint_states.resize(cfg_.joint_names.size(), {0.0, 0.0});
+        joint_cmds.resize(cfg_.joint_names.size(), {0.0, 0.0, 0.0});
+
         RCLCPP_INFO(logger_, "info passed successfully!");
 
         // Validate command and state interfaces for each joint
         // assign a command mode (position or speed)
         for (const hardware_interface::ComponentInfo & joint : info_.joints)
         {
-          const auto & joint_name = joint.name;
-          const auto & cmds = joint.command_interfaces;
-          const auto & states = joint.state_interfaces;
+            const auto & joint_name = joint.name;
+            const auto & cmds = joint.command_interfaces;
+            const auto & states = joint.state_interfaces;
               
-          // Allow 2 or 3 command interfaces
-          if (cmds.size() != 2 && cmds.size() != 3)
-          {
-              RCLCPP_FATAL(
-                  logger_,"Joint '%s' has %zu command interfaces. Expected 2 (speed mode) or 3 (position mode).",
-                  joint_name.c_str(), cmds.size());
-              return hardware_interface::CallbackReturn::ERROR;
-          }
+            // Allow 2 or 3 command interfaces
+            if (cmds.size() != 2 && cmds.size() != 3)
+            {
+                RCLCPP_FATAL(
+                    logger_,"Joint '%s' has %zu command interfaces. Expected 2 (speed mode) or 3 (position mode).",
+                    joint_name.c_str(), cmds.size());
+                return hardware_interface::CallbackReturn::ERROR;
+            }
+            
+            if (cmds.size() == 2 &&
+                cmds[0].name == hardware_interface::HW_IF_VELOCITY &&
+                cmds[1].name == hardware_interface::HW_IF_ACCELERATION)
+            {
+                setCommandMode(SPEED);
+                RCLCPP_INFO(logger_, "Joint '%s' is in speed mode", joint_name.c_str());
+            }
+            else if (cmds.size() == 3 &&
+                    cmds[0].name == hardware_interface::HW_IF_POSITION &&
+                    cmds[1].name == hardware_interface::HW_IF_VELOCITY &&
+                    cmds[2].name == hardware_interface::HW_IF_ACCELERATION)
+            {
+                setCommandMode(POSITION);
+                RCLCPP_INFO(logger_, "Joint '%s' is in position mode", joint_name.c_str());
+            }
+            else
+            {
+                RCLCPP_FATAL(
+                    logger_, "Joint '%s' has unsupported command interface configuration.", joint_name.c_str());
+                return hardware_interface::CallbackReturn::ERROR;
+            }
+            
+            // Expect 2 state interfaces: position and velocity
+            if (states.size() != 2 ||
+                states[0].name != hardware_interface::HW_IF_POSITION ||
+                states[1].name != hardware_interface::HW_IF_VELOCITY)
+            {
+                RCLCPP_FATAL(
+                    logger_, "Joint '%s' must have exactly 2 state interfaces: 'position' and 'velocity'.", joint_name.c_str());
+                return hardware_interface::CallbackReturn::ERROR;
+            }
+
+            RCLCPP_INFO(logger_, "Joint '%s' has commnand interface : ", joint_name.c_str());
+            for (auto &cmd : cmds) {
+                RCLCPP_INFO(logger_, "  - %s", cmd.name.c_str());
+            }
+            RCLCPP_INFO(logger_, "Joint '%s' has state interface : ", joint_name.c_str());
+            for (auto &state : states) {
+                RCLCPP_INFO(logger_, "  - %s", state.name.c_str());
+            }
+        }
         
-          if (cmds.size() == 2 &&
-              cmds[0].name == hardware_interface::HW_IF_VELOCITY &&
-              cmds[1].name == hardware_interface::HW_IF_ACCELERATION)
-          {
-              setCommandMode(SPEED);
-              RCLCPP_INFO(logger_, "Hardware interface is in speed mode");
-          }
-          else if (cmds.size() == 3 &&
-                   cmds[0].name == hardware_interface::HW_IF_POSITION &&
-                   cmds[1].name == hardware_interface::HW_IF_VELOCITY &&
-                   cmds[2].name == hardware_interface::HW_IF_ACCELERATION)
-          {
-              setCommandMode(POSITION);
-              RCLCPP_INFO(logger_, "Hardware interface is in position mode");
-          }
-          else
-          {
-              RCLCPP_FATAL(
-                  logger_, "Joint '%s' has unsupported command interface configuration.", joint_name.c_str());
-              return hardware_interface::CallbackReturn::ERROR;
-          }
-        
-          // Expect 2 state interfaces: position and velocity
-          if (states.size() != 2 ||
-              states[0].name != hardware_interface::HW_IF_POSITION ||
-              states[1].name != hardware_interface::HW_IF_VELOCITY)
-          {
-              RCLCPP_FATAL(
-                  logger_, "Joint '%s' must have exactly 2 state interfaces: 'position' and 'velocity'.", joint_name.c_str());
-              return hardware_interface::CallbackReturn::ERROR;
-          }
-        }      
+        RCLCPP_INFO(logger_, "All joints have valid command and state interfaces");
 
         return hardware_interface::CallbackReturn::SUCCESS;
     }
@@ -152,11 +167,11 @@ namespace diff_bot {
         
         std::vector<hardware_interface::StateInterface> state_interfaces;
 
-        for (size_t i = 0; i < motors.size(); i++) {
-        state_interfaces.emplace_back(hardware_interface::StateInterface(
-            motors[i]->name_, hardware_interface::HW_IF_POSITION, &joint_states[i][0]));
-        state_interfaces.emplace_back(hardware_interface::StateInterface(
-            motors[i]->name_, hardware_interface::HW_IF_VELOCITY, &joint_states[i][1]));
+        for (size_t i = 0; i < cfg_.joint_names.size(); i++) {
+            state_interfaces.emplace_back(hardware_interface::StateInterface(
+                cfg_.joint_names[i], hardware_interface::HW_IF_POSITION, &joint_states[i][0]));
+            state_interfaces.emplace_back(hardware_interface::StateInterface(
+                cfg_.joint_names[i], hardware_interface::HW_IF_VELOCITY, &joint_states[i][1]));
         }
 
       return state_interfaces;
@@ -166,19 +181,19 @@ namespace diff_bot {
         
         std::vector<hardware_interface::CommandInterface> command_interfaces;
 
-        for (size_t i = 0; i < motors.size(); ++i) {
+        for (size_t i = 0; i < cfg_.joint_names.size(); i++) {
 
             // If in position mode, export position interfaces first
             if (cmd_mode_ == CommandMode::POSITION) {
                 command_interfaces.emplace_back(hardware_interface::CommandInterface(
-                    motors[i]->name_, hardware_interface::HW_IF_POSITION, &joint_cmds[i][0]));
+                    cfg_.joint_names[i], hardware_interface::HW_IF_POSITION, &joint_cmds[i][0]));
             }
 
             // Always export velocity + acceleration
             command_interfaces.emplace_back(hardware_interface::CommandInterface(
-                motors[i]->name_, hardware_interface::HW_IF_VELOCITY, &joint_cmds[i][1]));
+                cfg_.joint_names[i], hardware_interface::HW_IF_VELOCITY, &joint_cmds[i][1]));
             command_interfaces.emplace_back(hardware_interface::CommandInterface(
-                motors[i]->name_, hardware_interface::HW_IF_ACCELERATION, &joint_cmds[i][2]));
+                cfg_.joint_names[i], hardware_interface::HW_IF_ACCELERATION, &joint_cmds[i][2]));
         }
 
         return command_interfaces;
