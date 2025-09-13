@@ -54,6 +54,13 @@ public:
             "sudo /sbin/ip link set " + interface + " type can bitrate " + std::to_string(bitrate) + " && " +
             "sudo /sbin/ip link set " + interface + " up";
         int ret = std::system(cmd.c_str());
+
+        RCLCPP_INFO(logger_, "Command : '%s'", cmd.c_str());
+
+        if (WIFEXITED(ret)) {
+            int exit_code = WEXITSTATUS(ret);
+            RCLCPP_INFO(logger_, "System returned '%d'", exit_code);
+        }
         return (ret == 0);
     }
 
@@ -117,13 +124,13 @@ public:
             ssize_t nbytes = read(sock_, &received_frame, sizeof(received_frame));
             if (nbytes != sizeof(received_frame))
             {
-                RCLCPP_ERROR(logger_, "Incomplete CAN frame read: %zd bytes", nbytes);
+                RCLCPP_ERROR(logger_, "[CAN_Comms]:Incomplete CAN frame read: %zd bytes", nbytes);
                 return false;
             }
 
             if (received_frame.can_dlc < 3)
             {
-                RCLCPP_WARN(logger_, "Received frame too short to contain CRC (DLC: %u)", received_frame.can_dlc);
+                RCLCPP_WARN(logger_, "[CAN_Comms]: Received frame too short to contain CRC (DLC: %u)", received_frame.can_dlc);
                 return false;
             }
 
@@ -134,13 +141,14 @@ public:
 
             if (received_crc != computed_crc)
             {
-                RCLCPP_WARN(logger_, "CRC mismatch: received=0x%04X, computed=0x%04X", received_crc, computed_crc);
+                RCLCPP_WARN(logger_, "[CAN_Comms]: CRC mismatch: received=0x%04X, computed=0x%04X", received_crc, computed_crc);
                 return false;
             }
 
             return true;
         }
 
+        RCLCPP_ERROR(logger_, "[CAN_Comms]: timeout reached! No message sent");
         return false; // timeout or error
     }
 

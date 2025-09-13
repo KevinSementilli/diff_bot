@@ -68,7 +68,7 @@ public:
     int16_t read_speed() {
         std::vector<uint8_t> query = {0x32};
         if (!comms_->send_frame(CAN_id_, query)) {
-            RCLCPP_ERROR(logger_, "Failed to send speed query (0x32)");
+            RCLCPP_ERROR(logger_, "[Motor %d]: Failed to send speed query (0x32)", CAN_id_);
             return 0;
         }
 
@@ -82,7 +82,7 @@ public:
             }
         }
 
-        RCLCPP_ERROR(logger_, "Failed to receive speed response (0x32)");
+        RCLCPP_ERROR(logger_, "[Motor %d]: Failed to receive speed response (0x32)", CAN_id_);
         return 0;
     }
 
@@ -90,7 +90,7 @@ public:
     int64_t read_encoder_position() {
         std::vector<uint8_t> query = {0x30};
         if (!comms_->send_frame(CAN_id_, query)) {
-            RCLCPP_ERROR(logger_, "Failed to send encoder position query (0x30)");
+            RCLCPP_ERROR(logger_, "[Motor %d]: Failed to send encoder position query (0x30)", CAN_id_);
             return 0;
         }
 
@@ -108,7 +108,7 @@ public:
             }
         }
 
-        RCLCPP_ERROR(logger_, "Failed to receive encoder position (0x30)");
+        RCLCPP_ERROR(logger_, "[Motor %d]: Failed to receive encoder position (0x30)", CAN_id_);
         return 0;
     }
 

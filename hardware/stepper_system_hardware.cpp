@@ -133,16 +133,16 @@ namespace diff_bot {
         
         RCLCPP_INFO(logger_, "Activating CAN device: %s, bitrate: %d", cfg_.interface_name.c_str(), cfg_.CAN_rate);
 
-        while(!comms_.connect(cfg_.interface_name, cfg_.CAN_rate)) {
+        // while(!comms_.connect(cfg_.interface_name, cfg_.CAN_rate)) {
 
-            RCLCPP_WARN(logger_, "CAN device not connected, retrying ...");
-            rclcpp::sleep_for(std::chrono::milliseconds(200));
-        }
+        //     RCLCPP_WARN(logger_, "CAN device not connected, retrying ...");
+        //     rclcpp::sleep_for(std::chrono::milliseconds(200));
+        // }
 
         RCLCPP_INFO(logger_, "Attaching motors to CAN bus...");
 
         for (const auto& motor : motors) {
-            if (motor->attachComms(comms_)) {
+            if (!motor->attachComms(comms_)) {
                 RCLCPP_ERROR(logger_, "Failed to attach motor %s to CAN bus", motor->name_.c_str());
                 return hardware_interface::CallbackReturn::ERROR;
             }
@@ -300,105 +300,105 @@ namespace diff_bot {
             (carrier_cmd[cmd_index] - bevel_cmd[cmd_index]) * motor_R->gear_reduction;
     }
 
-    hardware_interface::return_type StepperSystemHardware::prepare_command_mode_switch(
-        const std::vector<std::string>& start_ifaces,
-        const std::vector<std::string>& /*stop_ifaces*/)
-    {
+    // hardware_interface::return_type StepperSystemHardware::prepare_command_mode_switch(
+    //     const std::vector<std::string>& start_ifaces,
+    //     const std::vector<std::string>& /*stop_ifaces*/)
+    // {
         
-        // If nothing is being started, nothing to validate or change.
-        if (start_ifaces.empty()) {
-            return hardware_interface::return_type::OK;
-        }
+    //     // If nothing is being started, nothing to validate or change.
+    //     if (start_ifaces.empty()) {
+    //         return hardware_interface::return_type::OK;
+    //     }
 
-        const size_t n_joints = cfg_.joint_names.size();
+    //     const size_t n_joints = cfg_.joint_names.size();
 
-        // Count how many of each interface are being started.
-        size_t n_pos = 0, n_vel = 0, n_acc = 0, n_other = 0;
+    //     // Count how many of each interface are being started.
+    //     size_t n_pos = 0, n_vel = 0, n_acc = 0, n_other = 0;
 
-        for (const auto& full : start_ifaces) {
-            // Interface names look like "joint_name/interface"
-            const auto slash = full.rfind('/');
-            std::string_view ifname =
-                (slash == std::string::npos)
-                    ? std::string_view{full}
-                    : std::string_view{full}.substr(slash + 1);
+    //     for (const auto& full : start_ifaces) {
+    //         // Interface names look like "joint_name/interface"
+    //         const auto slash = full.rfind('/');
+    //         std::string_view ifname =
+    //             (slash == std::string::npos)
+    //                 ? std::string_view{full}
+    //                 : std::string_view{full}.substr(slash + 1);
 
-            if (ifname == hardware_interface::HW_IF_POSITION) {
-            ++n_pos;
-            } else if (ifname == hardware_interface::HW_IF_VELOCITY) {
-            ++n_vel;
-            } else if (ifname == hardware_interface::HW_IF_ACCELERATION) {
-            ++n_acc;
-            } else {
-            ++n_other; // unknown interface
-            }
-        }
+    //         if (ifname == hardware_interface::HW_IF_POSITION) {
+    //         ++n_pos;
+    //         } else if (ifname == hardware_interface::HW_IF_VELOCITY) {
+    //         ++n_vel;
+    //         } else if (ifname == hardware_interface::HW_IF_ACCELERATION) {
+    //         ++n_acc;
+    //         } else {
+    //         ++n_other; // unknown interface
+    //         }
+    //     }
 
-        if (n_other > 0) {
-            RCLCPP_ERROR(logger_, "[prepare_command_mode_switch] unsupported interfaces requested");
-            return hardware_interface::return_type::ERROR;
-        }
+    //     if (n_other > 0) {
+    //         RCLCPP_ERROR(logger_, "[prepare_command_mode_switch] unsupported interfaces requested");
+    //         return hardware_interface::return_type::ERROR;
+    //     }
 
-        if (n_pos > 0) {
+    //     if (n_pos > 0) {
             
-            // Position mode requires (per joint): position + velocity + acceleration
-            if (n_pos != n_joints || n_vel != n_joints || n_acc != n_joints) {
-            RCLCPP_ERROR(logger_,
-                        "[prepare_command_mode_switch] position mode requires starting "
-                        "position, velocity, acceleration for ALL joints "
-                        "Recieved : pos=%zu vel=%zu acc=%zu, joints=%zu)",
-                        n_pos, n_vel, n_acc, n_joints);
-            return hardware_interface::return_type::ERROR;
-            }
-            requested_cmd_mode_ = CommandMode::POSITION;
+    //         // Position mode requires (per joint): position + velocity + acceleration
+    //         if (n_pos != n_joints || n_vel != n_joints || n_acc != n_joints) {
+    //         RCLCPP_ERROR(logger_,
+    //                     "[prepare_command_mode_switch] position mode requires starting "
+    //                     "position, velocity, acceleration for ALL joints "
+    //                     "Recieved : pos=%zu vel=%zu acc=%zu, joints=%zu)",
+    //                     n_pos, n_vel, n_acc, n_joints);
+    //         return hardware_interface::return_type::ERROR;
+    //         }
+    //         requested_cmd_mode_ = CommandMode::POSITION;
 
-        } else {
-            // Speed mode requires (per joint): velocity + acceleration
-            if (n_vel != n_joints || n_acc != n_joints) {
-            RCLCPP_ERROR(logger_,
-                        "[prepare_command_mode_switch] speed mode requires starting "
-                        "velocity, acceleration for ALL joints "
-                        "Recieved : vel=%zu acc=%zu, joints=%zu)",
-                        n_vel, n_acc, n_joints);
-            return hardware_interface::return_type::ERROR;
-            }
-            requested_cmd_mode_ = CommandMode::SPEED;
-        }
+    //     } else {
+    //         // Speed mode requires (per joint): velocity + acceleration
+    //         if (n_vel != n_joints || n_acc != n_joints) {
+    //         RCLCPP_ERROR(logger_,
+    //                     "[prepare_command_mode_switch] speed mode requires starting "
+    //                     "velocity, acceleration for ALL joints "
+    //                     "Recieved : vel=%zu acc=%zu, joints=%zu)",
+    //                     n_vel, n_acc, n_joints);
+    //         return hardware_interface::return_type::ERROR;
+    //         }
+    //         requested_cmd_mode_ = CommandMode::SPEED;
+    //     }
         
-        return hardware_interface::return_type::OK;
-    }
+    //     return hardware_interface::return_type::OK;
+    // }
 
-    hardware_interface::return_type StepperSystemHardware::perform_command_mode_switch(
-        const std::vector<std::string>& start_ifaces,
-        const std::vector<std::string>& stop_ifaces) {
+    // hardware_interface::return_type StepperSystemHardware::perform_command_mode_switch(
+    //     const std::vector<std::string>& start_ifaces,
+    //     const std::vector<std::string>& stop_ifaces) {
 
-        if (requested_cmd_mode_ == cmd_mode_) {
-            // Already in this mode, nothing to do
-            RCLCPP_INFO(logger_, "[perform_command_mode_switch] already in requested mode");
-            return hardware_interface::return_type::OK;
-        }
+    //     if (requested_cmd_mode_ == cmd_mode_) {
+    //         // Already in this mode, nothing to do
+    //         RCLCPP_INFO(logger_, "[perform_command_mode_switch] already in requested mode");
+    //         return hardware_interface::return_type::OK;
+    //     }
 
-        for (const auto& iface : start_ifaces) {
-            RCLCPP_INFO(logger_, "[prepare_command_mode_switch] Starting interface: %s", iface.c_str());
-        }
+    //     for (const auto& iface : start_ifaces) {
+    //         RCLCPP_INFO(logger_, "[prepare_command_mode_switch] Starting interface: %s", iface.c_str());
+    //     }
 
-        for (const auto& iface : stop_ifaces) {
-            RCLCPP_INFO(logger_, "[prepare_command_mode_switch] Stopping interface: %s", iface.c_str());
-        }
+    //     for (const auto& iface : stop_ifaces) {
+    //         RCLCPP_INFO(logger_, "[prepare_command_mode_switch] Stopping interface: %s", iface.c_str());
+    //     }
 
-        setCommandMode(requested_cmd_mode_);
-        RCLCPP_INFO(logger_, "[perform_command_mode_switch] switched to %s mode",
-                    (cmd_mode_ == CommandMode::POSITION) ? "position" : "speed");
+    //     setCommandMode(requested_cmd_mode_);
+    //     RCLCPP_INFO(logger_, "[perform_command_mode_switch] switched to %s mode",
+    //                 (cmd_mode_ == CommandMode::POSITION) ? "position" : "speed");
         
-        for (auto& command: joint_cmds) {
-            command[0] = 0.0; // position
-            command[1] = 0.0; // velocity
-            command[2] = 0.0; // acceleration
-        }
+    //     for (auto& command: joint_cmds) {
+    //         command[0] = 0.0; // position
+    //         command[1] = 0.0; // velocity
+    //         command[2] = 0.0; // acceleration
+    //     }
 
-        RCLCPP_INFO(logger_, "[perform_command_mode_switch]: Reintialized all joint commands to zero!");
-        return hardware_interface::return_type::OK;
-    }
+    //     RCLCPP_INFO(logger_, "[perform_command_mode_switch]: Reintialized all joint commands to zero!");
+    //     return hardware_interface::return_type::OK;
+    // }
 
 } // namespace robotic_arm
 
