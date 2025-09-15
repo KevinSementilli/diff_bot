@@ -1,40 +1,104 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
     
-    <xacro:macro name="ros2_control" params="cmd_mode">
-        <ros2_control name="StepperSystemHardware" type="system">
-            <hardware>    
-                <plugin>diff_bot/StepperSystemHardware</plugin>
-                <param name="device">can0</param>
-                <param name="CAN_rate">500000</param>
-                <param name="timeout">5</param>
-                <param name="loop_rate">1000</param>
-            </hardware>
+    <xacro:macro name="ros2_control" params="HW_mode cmd_mode">
+        <xacro:if value="${HW_mode == 'real'}">
+            <ros2_control name="StepperSystemHardware" type="system">
+                <hardware>    
+                    <plugin>diff_bot/StepperSystemHardware</plugin>
+                    <param name="device">can0</param>
+                    <param name="CAN_rate">500000</param>
+                    <param name="timeout">5</param>
+                    <param name="loop_rate">1000</param>
+                </hardware>
 
-            <joint name="wrist_carrier_joint">
-                <xacro:if value="${cmd_mode == 'position'}"> 
-                    <command_interface name="position"/>
-                </xacro:if>
-                <command_interface name="velocity"/>
-                <command_interface name="acceleration"/>
-                <state_interface name="position"/>
-                <state_interface name="velocity"/>
-                <param name="reduction">2</param>
-                <param name="CAN_id">0x01</param>
-            </joint>
+                <joint name="wrist_carrier_joint">
+                    <xacro:if value="${cmd_mode == 'position'}"> 
+                        <command_interface name="position"/>
+                    </xacro:if>
+                    <command_interface name="velocity"/>
+                    <command_interface name="acceleration"/>
+                    <state_interface name="position"/>
+                    <state_interface name="velocity"/>
+                    <param name="reduction">2</param>
+                    <param name="CAN_id">0x01</param>
+                </joint>
 
-            <joint name="wrist_bevel_joint">
-                <xacro:if value="${cmd_mode == 'position'}">
+                <joint name="wrist_bevel_joint">
+                    <xacro:if value="${cmd_mode == 'position'}">
+                        <command_interface name="position"/>
+                    </xacro:if>
+                    <command_interface name="velocity"/>
+                    <command_interface name="acceleration"/>
+                    <state_interface name="position"/>
+                    <state_interface name="velocity"/>
+                    <param name="reduction">2</param>
+                    <param name="CAN_id">0x02</param>
+                </joint>
+            </ros2_control>
+        </xacro:if>
+        <xacro:if value="${HW_mode == 'gazebo'}">
+            <ros2_control name="GazeboSimSystem" type="system">
+                <hardware>
+                    <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+                </hardware>
+
+                <joint name="wrist_carrier_joint">
+                    <xacro:if value="${cmd_mode == 'position'}">
                     <command_interface name="position"/>
-                </xacro:if>
-                <command_interface name="velocity"/>
-                <command_interface name="acceleration"/>
-                <state_interface name="position"/>
-                <state_interface name="velocity"/>
-                <param name="reduction">2</param>
-                <param name="CAN_id">0x02</param>
-            </joint>
-        </ros2_control> 
+                    </xacro:if>
+                    <command_interface name="velocity"/>
+                    <!-- <command_interface name="acceleration"/> -->
+                    <state_interface name="position">
+                    <param name="initial_value">0.0</param>
+                    </state_interface>
+                    <state_interface name="velocity"/>
+                </joint>
+
+                <joint name="wrist_bevel_joint">
+                    <xacro:if value="${cmd_mode == 'position'}">
+                    <command_interface name="position"/>
+                    </xacro:if>
+                    <command_interface name="velocity"/>
+                    <!-- <command_interface name="acceleration"/> -->
+                    <state_interface name="position">
+                    <param name="initial_value">0.0</param>
+                    </state_interface>
+                    <state_interface name="velocity"/>
+                </joint>
+            </ros2_control>
+        </xacro:if>
+        <xacro:if value="${HW_mode == 'mock'}">
+            <ros2_control name="sim_control" type="system">
+                <hardware>
+                    <plugin>mock_components/GenericSystem</plugin>
+                </hardware>
+
+                <joint name="wrist_carrier_joint">
+                    <xacro:if value="${cmd_mode == 'position'}">
+                    <command_interface name="position"/>
+                    </xacro:if>
+                    <command_interface name="velocity"/>
+                    <!-- <command_interface name="acceleration"/> -->
+                    <state_interface name="position">
+                    <param name="initial_value">0.0</param>
+                    </state_interface>
+                    <state_interface name="velocity"/>
+                </joint>
+
+                <joint name="wrist_bevel_joint">
+                    <xacro:if value="${cmd_mode == 'position'}">
+                    <command_interface name="position"/>
+                    </xacro:if>
+                    <command_interface name="velocity"/>
+                    <!-- <command_interface name="acceleration"/> -->
+                    <state_interface name="position">
+                    <param name="initial_value">0.0</param>
+                    </state_interface>
+                    <state_interface name="velocity"/>
+                </joint>
+            </ros2_control>
+        </xacro:if>
     </xacro:macro>
-
+    
 </robot>

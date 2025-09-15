@@ -14,14 +14,14 @@ def generate_launch_description():
 
     package_name = 'diff_bot'
 
+    HW_mode = LaunchConfiguration('HW_mode')
     cmd_mode = LaunchConfiguration('cmd_mode')
-    real_time = LaunchConfiguration('real_time')
 
     # launch robot_state_publisher 
     rsp = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             [os.path.join(get_package_share_directory(package_name), 'launch/include' ,'rsp.launch.py')]), 
-            launch_arguments={'cmd_mode': cmd_mode, 'real_time': real_time}.items()
+            launch_arguments={'HW_mode': HW_mode, 'cmd_mode': cmd_mode}.items()
     )
 
     controller_config = os.path.join(
@@ -93,16 +93,13 @@ def generate_launch_description():
 
     return LaunchDescription([
         DeclareLaunchArgument(
-            'cmd_mode',
-            default_value='speed',
-            description='choose between position and speed control'
-        ),
-
+            'HW_mode',
+            default_value='mock',
+            description='Options : mock, real, gazebo'),
         DeclareLaunchArgument(
-            'real_time',
-            default_value='true',
-            description='choose between real hardware and mock hardware'
-        ),
+            'cmd_mode',
+            default_value='position',
+            description='choose between position and speed control'),
 
         rsp,
         delay_controller_manager,

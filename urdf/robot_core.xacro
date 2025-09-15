@@ -35,6 +35,11 @@
                 <mesh filename="package://diff_bot/meshes/forearm.stl" scale="${scale_factor}"/>
             </geometry>
         </collision>
+        <inertial>
+            <mass value="1.0"/>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+        </inertial>
     </link>
 
     <joint name="base_joint" type="fixed">
@@ -57,6 +62,11 @@
                 <mesh filename="package://diff_bot/meshes/wrist_carrier.stl" scale="${scale_factor}"/>
             </geometry>
         </collision>
+        <inertial>
+            <mass value="0.5"/>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+        </inertial>
     </link>
 
     <joint name="wrist_carrier_joint" type="revolute">
@@ -81,6 +91,11 @@
                 <mesh filename="package://diff_bot/meshes/wrist_bevel.stl" scale="${scale_factor}"/>
             </geometry>
         </collision>
+        <inertial>
+            <mass value="0.5"/>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+        </inertial>
     </link>
 
     <joint name="wrist_bevel_joint" type="revolute">
